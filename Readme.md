@@ -1,7 +1,11 @@
 # Configuring CI/CD on Kubernetes with Jenkins
 
 ### Brief Description
+
+DevOps is a concept and a culture of efficient collaboration, cooperation and communication between all stakeholders of the process. Automation is the key principle of DevOps. Automation increases the velocity, reduces human errors, provides consistent results and mitigates risks. This is why organizations should adopt the DevOps approach into their business. This tutorial provides a guidance to achieve fully automated environment with help of Jenkins and Kubernetes.
+
 In this tutorial, developers will learn: 
+
 * Setting up a Jenkins environment on Kubernetes
 * Configuring a CI/CD Jenkins pipeline
 * Building Docker images using Jenkins 
@@ -11,15 +15,19 @@ In this tutorial, developers will learn:
 * Integrating Github and Jenkins using Github webhooks
 
 ### What is Jenkins?
+
 Jenkins is a self-contained, open source automation server which can be used to automate all sorts of tasks related to building, testing, and delivering or deploying software. Jenkins can be installed through native system packages, Docker, or even run standalone by any machine with a Java Runtime Environment (JRE) installed.
 
 ### What is Docker?
+
 Docker is a tool designed to make it easier to create, deploy, and run applications by using containers. Containers allow a developer to package up an application with all of the parts it needs, such as libraries and other dependencies, and ship it all out as one package. By doing so, thanks to the container, the developer can rest assured that the application will run on any other Linux machine regardless of any customized settings that machine might have that could differ from the machine used for writing and testing the code.
 
 ### What is Kubernetes?
+
 Kubernetes is a portable, extensible, open-source platform for automating deployment, scaling and managing containerized workloads and services, that facilitates both declarative configuration and automation. It has a large, rapidly growing ecosystem. Kubernetes services, support, and tools are widely available.
 
 ## Prerequisites
+
 * [IBM Cloud Account](https://cloud.ibm.com)
 * [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-install-ibmcloud-cli)
 * [Docker](https://www.docker.com/)
@@ -36,6 +44,7 @@ $ curl -sL https://ibm.biz/idt-installer | bash
 ```
 
 ## Steps
+
 Follow these steps to setup and run this tutorial.
 
 1. [Create a Kubernetes Cluster on IBM Cloud](#1-create-a-kubernetes-cluster-on-ibm-cloud)
@@ -48,6 +57,7 @@ Follow these steps to setup and run this tutorial.
 8. [Test the First Jenkins Pipeline](#8-test-the-first-jenkins-pipeline)
 
 ### 1. Create a Kubernetes Cluster on IBM Cloud
+
 Login to IBM Cloud and choose the `'Kubernetes'` option from Navigation Menu. After that, click on `'Create Cluster'` button and select the `'Free'` plan.
 
 >**Note:** This process will take approximately 40 minutes.
@@ -55,6 +65,7 @@ Login to IBM Cloud and choose the `'Kubernetes'` option from Navigation Menu. Af
 ![create-a-kubernetes-cluster-on-ibm-cloud](./gif/create-a-kubernetes-cluster.gif "Create a Kubernetes Cluster on IBM Cloud")
 
 ### 2. Build a Modified Jenkins Image
+
 Early on, Jenkins is designed to run on physical machines without any containerization technology. As containerization technologies become very popular, Jenkins also adapted its solution to the new containerized world. But this adaption brought some challenges. For instance, Jenkins requires Docker to build Docker images. But containerized version of Jenkins does not contain Docker and Docker CLI by default. For this reason, a new Docker image that contains Docker CLI and other tools should be created by using Jenkins image as base image.
 
 >**Note:** This Dockerfile builds a modified Jenkins image that contains Docker CLI and Kubernetes CLI(kubectl).
@@ -93,6 +104,7 @@ docker build -t kmlaydin/modified-jenkins:latest .
 ![build-a-modified-jenkins-image](./gif/build-a-modified-jenkins-image.gif "Build a Modified Jenkins Image")
 
 ### 3. Deploy Modified Jenkins Image to Kubernetes
+
 Modified Jenkins image is built successfully. But it is in the local environment now. Kubernetes can not access to the local images. This is where Docker Hub gets on the stage. Docker Hub is a cloud-based repository in which Docker users and partners create, test, store and distribute container images. Modified Jenkins image is needed to push to Docker Hub or other container registries like [IBM Cloud Container Registry](https://www.ibm.com/cloud/container-registry). Docker uses Docker Hub by default.
 
 * Run the following command to login to Docker Hub via the terminal.
@@ -163,6 +175,7 @@ $ echo $EXTERNAL_IP:$NODE_PORT
 ![get-external-ip-kubernetes-worker-node](./gif/get-external-ip-kubernetes-worker-node.gif "Get External IP of Kubernetes Worker Node")
 
 ### 4. Set up Jenkins Environment
+
 Jenkins assigns the initial admin password. This password can be found by logging Jenkins container.
 
 * Run the following command to get logs of Jenkins container.
