@@ -1,47 +1,55 @@
 # Configuring CI/CD on Kubernetes with Jenkins
 
-### Brief Description
+### Introduction
 
-DevOps is a concept and a culture of efficient collaboration, cooperation and communication between all stakeholders of the process. Automation is the key principle of DevOps. Automation increases the velocity, reduces human errors, provides consistent results and mitigates risks. This is why organizations should adopt the DevOps approach into their business. This tutorial provides a guidance to achieve fully automated environment with help of Jenkins and Kubernetes.
+DevOps encourages collaboration, cooperation, and communication between developers and operations teams to improve the speed and quality of software development. One of the key principles of DevOps is automation, which reduces human error, provides consistent results, and even mitigates risks. With the help of automation, you and your team can build, test, and deploy software quickly and efficiently. 
 
-In this tutorial, developers will learn: 
+In this tutorial, you’ll learn how to achieve a fully automated environment with Jenkins on Kubernetes.
 
-* Setting up a Jenkins environment on Kubernetes
-* Configuring a CI/CD Jenkins pipeline
-* Building Docker images using Jenkins 
-* Pushing Docker images to Docker registry
-* Deploying Docker images to Kubernetes environment
-* Integrating Slack and Jenkins
-* Integrating Github and Jenkins using Github webhooks
+### Learning objectives
 
-### What is Jenkins?
+In this tutorial, you will:  
 
-Jenkins is a self-contained, open source automation server which can be used to automate all sorts of tasks related to building, testing, and delivering or deploying software. Jenkins can be installed through native system packages, Docker, or even run standalone by any machine with a Java Runtime Environment (JRE) installed.
-
-### What is Docker?
-
-Docker is a tool designed to make it easier to create, deploy, and run applications by using containers. Containers allow a developer to package up an application with all of the parts it needs, such as libraries and other dependencies, and ship it all out as one package. By doing so, thanks to the container, the developer can rest assured that the application will run on any other Linux machine regardless of any customized settings that machine might have that could differ from the machine used for writing and testing the code.
-
-### What is Kubernetes?
-
-Kubernetes is a portable, extensible, open-source platform for automating deployment, scaling and managing containerized workloads and services, that facilitates both declarative configuration and automation. It has a large, rapidly growing ecosystem. Kubernetes services, support, and tools are widely available.
+* Set up a Jenkins environment on Kubernetes
+* Configure a CI/CD Jenkins pipeline
+* Build Docker images using Jenkins 
+* Push Docker images to a Docker registry
+* Deploy Docker images to a Kubernetes environment
+* Integrate Slack and Jenkins
+* Integrate GitHub and Jenkins using GitHub webhooks
 
 ## Prerequisites
 
-* [IBM Cloud Account](https://cloud.ibm.com)
-* [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-install-ibmcloud-cli)
-* [Docker](https://www.docker.com/)
-* [Docker Hub Account](https://hub.docker.com)
-* [Kubernetes CLI](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-* [Git Client](https://git-scm.com/downloads)
-* [GitHub Account](https://github.com)
-* [Slack Account](https://slack.com)
+* Create a free [IBM Cloud Account](https://cloud.ibm.com)
+* Install the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-install-ibmcloud-cli)
+* Download and install [Docker](https://www.docker.com/)
+* Create a [Docker Hub Account](https://hub.docker.com)
+* Install the [Kubernetes CLI(kubectl)](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+* Install a [Git Client](https://git-scm.com/downloads)
+* Create a [GitHub Account](https://github.com)
+* Create a [Slack Account](https://slack.com)
 
-> **(Optional) Note:** The following command will install the IBM Cloud Developer Tools(IBM Cloud CLI, Kubernetes CLI(kubectl), Docker CLI and Git CLI) in a single invocation. Open up a terminal and run the following command:
+> **(Optional) Note:** Open up a terminal and run the following command to install the IBM Cloud CLI and Developer Tools, which include IBM Cloud CLI, Kubernetes CLI (kubectl), Docker CLI, and Git CLI. 
 
 ```
 $ curl -sL https://ibm.biz/idt-installer | bash
 ```
+
+Before we begin creating, building, and deploying, let’s first understand some of the tools and software we'll be using throughout this tutorial.
+
+### What is Jenkins?
+
+Jenkins is an open source automation server that you can use to automate tasks related to software development, testing, or deployments. 
+
+### What is Docker?
+
+Docker is an open source software platform built to make it easier to create, deploy, and run applications using containers. A container is a standardized package of software, which can include libraries and other dependencies. 
+
+### What is Kubernetes?
+
+Kubernetes is an open source container orchestration platform for automating deployment and scaling and managing containerized workloads and services. 
+
+Now we’re ready to get started. 
 
 ## Steps
 
@@ -49,7 +57,7 @@ Follow these steps to setup and run this tutorial.
 
 1. [Create a Kubernetes Cluster on IBM Cloud](#1-create-a-kubernetes-cluster-on-ibm-cloud)
 2. [Build a Modified Jenkins Image](#2-build-a-modified-jenkins-image)
-3. [Deploy Modified Jenkins Image to Kubernetes](#3-deploy-modified-jenkins-image-to-kubernetes)
+3. [Deploy a Modified Jenkins Image to Kubernetes](#3-deploy-a-modified-jenkins-image-to-kubernetes)
 4. [Set up Jenkins Environment](#4-set-up-jenkins-environment)
 5. [Create the First Jenkins Pipeline](#5-create-the-first-jenkins-pipeline)
 6. [Integrate Jenkins and Slack](#6-integrate-jenkins-and-slack)
@@ -58,7 +66,7 @@ Follow these steps to setup and run this tutorial.
 
 ### 1. Create a Kubernetes Cluster on IBM Cloud
 
-Login to IBM Cloud and choose the `'Kubernetes'` option from Navigation Menu. After that, click on `'Create Cluster'` button and select the `'Free'` plan.
+Login to IBM Cloud and choose the `'Kubernetes'` option from the navigation menu. Then, click on the `'Create Cluster'` button and select the `'Free'` plan. 
 
 >**Note:** This process will take approximately 40 minutes.
 
@@ -66,11 +74,13 @@ Login to IBM Cloud and choose the `'Kubernetes'` option from Navigation Menu. Af
 
 ### 2. Build a Modified Jenkins Image
 
-Early on, Jenkins is designed to run on physical machines without any containerization technology. As containerization technologies become very popular, Jenkins also adapted its solution to the new containerized world. But this adaption brought some challenges. For instance, Jenkins requires Docker to build Docker images. But containerized version of Jenkins does not contain Docker and Docker CLI by default. For this reason, a new Docker image that contains Docker CLI and other tools should be created by using Jenkins image as base image.
+Early on, Jenkins was designed to run on physical machines without any containerization technology. As containerization become more popular, Jenkins adapted its solution to the new containerized world. Unfortunately, this change brought some challenges. For instance, Jenkins requires Docker to build Docker images. However, a containerized version of Jenkins does not contain Docker and Docker CLI by default. For this reason, a new Docker image that contains Docker CLI and other tools must be created by using a Jenkins image as a base image.
 
->**Note:** This Dockerfile builds a modified Jenkins image that contains Docker CLI and Kubernetes CLI(kubectl).
+Docker uses `'Dockerfile'` to build custom images. For further information please see: [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
 
->**Note:** The mofidied Jenkins image does not contain Docker Daemon. Docker Daemon will run in another container. Jenkins image will refer to that Docker Daemon container. (See: [Docker in Docker](https://hub.docker.com/_/docker))
+In `'modified-jenkins'` directory there is a `'Dockerfile'` to build custom `'Mofidied Jenkins Image'`.
+
+Let's see how it looks like!
 
 ```
 FROM jenkins/jenkins:lts
@@ -88,14 +98,55 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s
 	&& chmod +x ./kubectl \
 	&& mv ./kubectl /usr/local/bin/kubectl
 ```
-* Open a terminal and navigate to the `'modified-jenkins'` directory.
+
+Let's examine the steps one by one.
+
+```
+FROM jenkins/jenkins:lts
+```
+
+* This step specifies the base image.
+
+```
+USER root
+```
+
+* This step grants root access to image. Root access will be used while installing the Docker CLI and Kubernetes CLI(kubectl).
+
+```
+ENV DOCKERVERSION=18.03.1-ce
+```
+
+* This step sets an environment variable.
+
+```
+RUN curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
+  && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 \
+                 -C /usr/local/bin docker/docker \
+  && rm docker-${DOCKERVERSION}.tgz
+```
+
+* This step downloads Docker, installs the Docker CLI and removes the Docker Daemon.
+
+>**Note:** The mofidied Jenkins image does not contain Docker Daemon. Docker Daemon will run in another container. Modified Jenkins image will refer to that Docker Daemon container. (See: [Docker in Docker](https://hub.docker.com/_/docker))
+
+```
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
+	&& chmod +x ./kubectl \
+	&& mv ./kubectl /usr/local/bin/kubectl
+```
+
+* This step downloads the Kubernetes CLI(kubectl) and installs it.
+
+Docker reads the steps one by one and builds customized image. Let's see how Docker builds custom images.
+
+* Next, open a terminal and navigate to the `'modified-jenkins'` directory.
 
 ```
 cd modified-jenkins
 ```
 
-* Run the following command to build modified Jenkins image.
->**Note:** Replace the `'kmlaydin'` with your Docker Hub username.
+* Replace `'kmlaydin'` with your Docker Hub username and run the following command to build a modified Jenkins image:
 
 ```
 docker build -t kmlaydin/modified-jenkins:latest .
@@ -103,19 +154,19 @@ docker build -t kmlaydin/modified-jenkins:latest .
 
 ![build-a-modified-jenkins-image](./gif/build-a-modified-jenkins-image.gif "Build a Modified Jenkins Image")
 
-### 3. Deploy Modified Jenkins Image to Kubernetes
+Congratulations! The modified Jenkins image was successfully built.
 
-Modified Jenkins image is built successfully. But it is in the local environment now. Kubernetes can not access to the local images. This is where Docker Hub gets on the stage. Docker Hub is a cloud-based repository in which Docker users and partners create, test, store and distribute container images. Modified Jenkins image is needed to push to Docker Hub or other container registries like [IBM Cloud Container Registry](https://www.ibm.com/cloud/container-registry). Docker uses Docker Hub by default.
+### 3. Deploy a Modified Jenkins Image to Kubernetes
 
-* Run the following command to login to Docker Hub via the terminal.
+The modified Jenkins image is in the local environment now and Kubernetes cannot access the local images. This is where Docker Hub comes into the picture. Docker Hub is a cloud-based repository in which Docker users and partners create, test, store, and distribute container images. A modified Jenkins image is needed to push to the Docker Hub or other container registries like [IBM Cloud Container Registry](https://www.ibm.com/cloud/container-registry). By default, Docker uses Docker Hub.
+
+* First, start by running the following command to login to Docker Hub via the terminal:
 
 ```
 docker login
 ```
 
-* Run the following command to push the modified Jenkins image to Docker Hub. 
-
->**Note:** Replace the `'kmlaydin'` with your Docker Hub username.
+* Next, push the modified Jenkins image to Docker Hub with this command (remember to replace `'kmlaydin'` with your Docker Hub username):
 
 ```
 docker push kmlaydin/modified-jenkins:latest
@@ -123,24 +174,20 @@ docker push kmlaydin/modified-jenkins:latest
 
 ![push-image-to-dockerhub](./gif/push-image-to-dockerhub.gif "Push Modified Jenkins Image to Docker Hub")
 
-Pushed image can be seen via [Docker Hub](https://hub.docker.com/). Now, Kubernetes can access the image conveniently. Kubernetes works with YAML files to handle configurations.(See: [YAML basics in Kubernetes](https://developer.ibm.com/tutorials/yaml-basics-and-usage-in-kubernetes/)).
+The pushed image can now be seen via [Docker Hub](https://hub.docker.com/) and Kubernetes can now access the image conveniently. Kubernetes works with [YAML files](https://developer.ibm.com/tutorials/yaml-basics-and-usage-in-kubernetes) to handle configurations.
 
-* Open the `'jenkins-deployment.yaml'` file which is located in the `'modified-jenkins'` directory with a code editor.
-* Find the `'kmlaydin/modified-jenkins:latest'` part and replace the Docker Hub username, pushed image's name and version.
+* Now you need to open the `'jenkins-deployment.yaml'` file, located in the `'modified-jenkins directory'`, with a code editor.
+* Find `'kmlaydin/modified-jenkins:latest'` and replace the Docker Hub username, pushed image's name, and version.
 
 ![jenkins-deployment-image-change](./gif/jenkins-deployment-image-change.gif "Jenkins Deployment Change Image")
 
-Deployment file is ready to deploy modified jenkins to Kubernetes.
+The deployment file is now ready to deploy modified Jenkins to Kubernetes.
 
-* Open the dashboard of Kubernetes cluster which is created in step 1.
-* Navigate to the `'Access'` tab.
-* Run the commands to gain access to Kubernetes cluster via terminal.
+* Now, open the Kubernetes cluster dashboard which we created in step 1. Navigate to the `'Access'` tab and run the commands to gain access to the Kubernetes cluster via the terminal.
 
 ![kubernetes-gain-access-via-terminal](./gif/kubernetes-gain-access-via-terminal.gif "Kubernetes Gain Access via Terminal")
 
-* Run the following commands to deploy the modified Jenkins to Kubernetes. 
-
->**Note:** Make sure that the directory is `'modified-jenkins'`.
+* Make sure that the directory is `'modified-jenkins'` and run the following commands to deploy the modified Jenkins to Kubernetes:
 
 ```
 kubectl apply -f jenkins-deployment.yaml
@@ -149,8 +196,7 @@ kubectl apply -f jenkins-deployment.yaml
 kubectl apply -f jenkins-service.yaml
 ```
 
-* Run the following command to make sure that Jenkins is deployed and in the running status.
->**Note:** Deployment process can take a couple of minutes.
+* Now run the following command to make sure that Jenkins is deployed and has a running status. The deployment process may take a couple of minutes.
 
 ```
 kubectl get deployment,pod,service
@@ -158,7 +204,7 @@ kubectl get deployment,pod,service
 
 ![deploy-jenkins-to-kubernetes](./gif/deploy-jenkins-to-kubernetes.gif "Deploy Jenkins to Kubernetes")
 
-* Run the following commands to get external IP of your worker node to gain access to Jenkins dashboard.
+* Run the following commands to retrieve the external IP of your worker node to gain access to the Jenkins dashboard:
 
 ```
 $ export EXTERNAL_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address }')
@@ -176,139 +222,105 @@ $ echo $EXTERNAL_IP:$NODE_PORT
 
 ### 4. Set up Jenkins Environment
 
-Jenkins assigns the initial admin password. This password can be found by logging Jenkins container.
+Now it’s time to set up your Jenkins environment. Jenkins assigns the initial admin password, which can be found by logging the Jenkins container.
 
-* Run the following command to get logs of Jenkins container.
-
->**Note:** The initial admin password can be found between stars.
+* Run the following command to obtain the logs of the Jenkins container:
 
 ```
 kubectl logs $(kubectl get pods --selector=app=jenkins -o=jsonpath='{.items[0].metadata.name}') jenkins
 ```
+>**Note:** The initial admin password can be found between the rows of asterisks.
 
->**Note:** Installing suggested plugins can take a couple of minutes.
-* Select the `'Install suggested plugins'` option. 
+Now select the `'Install suggested plugins'` option. Continue by selecting `'Continue as admin'` and then click the `'Save and Finish'` button.
 
-* Select the `'Continue as admin'` option. 
-
-* Click the `'Save and Finish'` button. 
-
-Jenkins is ready to use.
+And just like that, Jenkins is ready to use.
 
 ![jenkins-first-set-up](./gif/jenkins-first-set-up.gif "Jenkins First Set up")
 
-Jenkins needs some credentials to fulfil a duty conveniently. Those credentials are needed by Jenkins to run properly,
+With Jenkins ready for use, the following credentials are needed for Jenkins to fulfill a duty conveniently and to run properly:
 
-* `'GitHub'` credentials to gain access to source code.
-* `'DockerHub'` credentials to push built image to DockerHub.
-* `'Kubeconfig'` file to gain access to Kubernetes cluster.
+* `'GitHub'` credentials to gain access to source code
+* `'DockerHub'` credentials to push a built image to Docker Hub
+* `'Kubeconfig'` file to gain access to a Kubernetes cluster
 
-`'GitHub'` and `'DockerHub'` credentials are kind of `'Username with password'`. But `'Kubeconfig'` credential is type of `'Secret file'`. Remember in step 3, Kubeconfig file is downloaded and exported as environment variable to local computer.
+`'GitHub'` and `'DockerHub'` credentials are type of `'Username with password'`. But `'Kubeconfig'` credential is type of `'Secret file'`. Remember in step 3, you downloaded the Kubeconfig file and it was exported as an environment variable to your local computer.
 
-* Run the following command to go to the `'Kubeconfig'` directory of that Kubernetes cluster.
-
->**Note**: KUBECONFIG environment variable should be set before running this command.(See: [Deploy Modified Jenkins Image to Kubernetes](#3-deploy-modified-jenkins-image-to-kubernetes))
+Now you need to go to the Kubeconfig directory of the Kubernetes cluster (the Kubeconfig environment variable should be set before running this command):
 ```
 $ cd $(echo $KUBECONFIG | awk '{split($0,a,"kube-config"); print a[1];}') && ls
 ```
 There should be two files in the directory.
 
-* `'<PEM-FILE>.pem'` file that stands for Privacy-Enhanced Mail is a file format for storing and sending cryptographic keys, certificates, and other data.
+* `'<PEM-FILE>.pem'` file that stands for Privacy-Enhanced Mail and is a file format for storing and sending cryptographic keys, certificates, and other data.
 
-* `'<KUBE-CONFIG>.yml'` file that is used to configure access to a cluster is sometimes called a kubeconfig file. This is a generic way of referring to configuration files.
+* `'<KUBE-CONFIG>.yml'` file is used to configure access to a cluster and sometimes is called a kubeconfig file, which is a generic way of referring to configuration files.
 
-Regarding to reference of `'<KUBE-CONFIG>.yml'` file to `'<PEM-FILE>.pem'` file, those two should be in the same directory. Nevertheless in Jenkins, there is no option to keep these two files in the same directory. For this reason, `'<PEM-FILE>.pem'` file should be embedded to `'<KUBE-CONFIG>.yml'` file.
+Both files should be in the same directory. In Jenkins, there is no option to keep these two files in the same directory. For this reason, the `'<PEM-FILE>.pem'` file should be embedded into the `'<KUBE-CONFIG>.yml'`file. To do this, copy both files in to the desktop directory. The copying process is not obligatory but is done to preserve the original files. 
 
-* Run the following command to copy those files in to the `'Desktop'` directory.
->**Note**: Copying process is not obligatory. This is done due to preservation of original files. 
-
->**Note**: Run this command in the directory that contains `'<PEM-FILE>.pem'` file and `'<KUBE-CONFIG>.yml'` file.
-
->**Note**: Destination directory can be changed by editing `'/Users/$USER/Desktop'` part.
+Now run this command in the directory that contains the `'<PEM-FILE>.pem'` file and the `'<KUBE-CONFIG>.yml'` file.
 
 ```
 $ for file in ./*; do cp $file /Users/$USER/Desktop; done;
 ```
 
-Go to the `'Desktop'` directory via terminal.
+* If you’d like, the destination directory can be changed by editing `'/Users/$USER/Desktop'`.
 
-* Run the following command to encode `'<PEM-FILE>.pem'` file as base64.
+Next, go to the desktop directory via the terminal. Encode the `'<PEM-FILE>.pem'` file as base64:
 
 ```
 $ base64 <PEM-FILE>.pem
 ```
 
-Copy the result and open the `'<KUBE-CONFIG>.yml'` file with a code editor. Find the `'certificate-authority: <PEM-FILE>.pem'` part and change it as `'certificate-authority-data: <BASE64-RESULT>'`.
+Copy the result and open the `'<KUBE-CONFIG>.yml'` file with a code editor. Find `'certificate-authority: <PEM-FILE>.pem'` and change it to `'certificate-authority-data: <BASE64-RESULT>'`.
 
 ![kube-config-editing](./gif/kube-config-editing.gif "Kubeconfig Editing")
 
-After this phase, `'<KUBE-CONFIG>.yml'` does not need `'<PEM-FILE>.pem'` file. Because it contains `'<PEM-FILE>.pem'` file.
+After completing the steps above, the `'<KUBE-CONFIG>.yml'` now contains the `'<PEM-FILE>.pem'` file.
 
-Go back to the Jenkins' dashboard and find the `'Credentials'` option in the left pane. After that, select the `'(global)'` option. Now, credentials can be added by clicking `'Add Credentials'` button in the left pane.
+Now go back to the Jenkins dashboard and find the `'Credentials'` option in the left pane and select the `'(global)'` option. The credentials can be added by clicking the `'Add Credentials'` button in the left pane. First, add the `'GitHub'` credentials as `'Username with password'` with the ID `'github'`. Then add the `'DockerHub'` credentials as `'Username with password'` with the ID `'dockerhub'`. Lastly, add the `'Kubeconfig'` credentials as `'Secret file'` with the ID `'kubeconfig'`.
 
-* Add `'GitHub'` credentials as `'Username with password'` with ID `'github'`.
-* Add `'DockerHub'` credentials as `'Username with password'` with ID `'dockerhub'`.
-* Add `'Kubeconfig'` credentials as `'Secret file'` with ID `'kubeconfig'`.
+The credentials are now ready to use and now plugins need to be installed. Jenkins has a wide range of plugin options. The [Kubernetes CLI](https://plugins.jenkins.io/kubernetes-cli) plugin is not mandatory; however, it eases the process. Kubernetes CLI allows you to configure `'kubectl'` to interact with Kubernetes clusters.
 
-Credentials are ready to use. Now that, some plugins should be installed. Jenkins has a wide range of plugin option.
-
->**Note:** Kubernetes CLI plugin is not mandatory. However, it eases the process.
-
-[Kubernetes CLI](https://plugins.jenkins.io/kubernetes-cli) allows you to configure `'kubectl'` in your job to interact with Kubernetes clusters.
-
-Go back to the Jenkins' dashboard and find the `'Manage Jenkins'` option in the left pane. After that, select the `'Manage Plugins'` option and choose the `'Available'` tab. There should be lots of available plugins in that tab. Search for the `'Kubernetes CLI'` plugin and install it.
-
-Jenkins is ready for the first landing!
+Let’s get that set up by going back to the Jenkins dashboard and finding the `'Manage Jenkins'` option in the left pane. Select `'Manage Plugins'` and then choose the `'Available'` tab. There should be a lot of available plugins in that tab. Search for the `'Kubernetes CLI'` plugin and install it. Hooray, Jenkins is ready for the first landing!
 
 ### 5. Create the First Jenkins Pipeline
 
->**Note:** In this step, a GitHub account that contains example files is needed. Example files are `'deployment.yaml'`, `'Dockerfile'`, `'index.js'`, `'Jenkinsfile'` and `'service.yaml'`.
+To create the first Jenkins pipeline, a GitHub account that contains example files is needed. Example files can be `'deployment.yaml'`, `'Dockerfile'`, `'index.js'`, `'Jenkinsfile'` or `'service.yaml'`.
 
-Go back to the Jenkins' dashboard and find the `'New Item'` option in the left pane. Enter an item name and choose `'Pipeline'` option.
+Navigate back to the Jenkins dashboard and find the `'New Item'` option in the left pane. Enter an item name and choose `'Pipeline'`. (An example project URL is `'https://github.com/kemallaydin/jenkins-example'`)
 
->**Note:** Example project url is `'https://github.com/kemallaydin/jenkins-example'`.
-* Choose `'GitHub project'` and type your project's url.
-* Find the `'Pipeline'` section and change the definition value from `'Pipeline script'` to `'Pipeline script from SCM'`.
-* Choose the `'SCM'` as `'Git'`.
->**Note:** Example repository url is `'https://github.com/kemallaydin/jenkins-example.git'`.
-* Type your repository URL and choose the `'Github'` credentials.
+Choose `'GitHub project'` and type your project’s URL. Find the `'Pipeline'` section and change the definition value from `'Pipeline script'` to `'Pipeline script from SCM'`. For the `'SCM'` option, choose `'Git'`.
+
+Now type in your repository URL and choose the `'Github'` credentials. (An example repository url is `'https://github.com/kemallaydin/jenkins-example.git'`)
 
 ![jenkins-first-pipeline](./gif/jenkins-first-pipeline.gif "Jenkins First Pipeline")
 
+Great! You’re now ready for the next step.
+
 ### 6. Integrate Jenkins and Slack
 
-Jenkins needs `'Slack Plugin'` to post notifications to a Slack channel.
+To post notifications to a Slack channel, Jenkins needs the `'Slack Plugin'`. Go back to the Jenkins dashboard and find the `'Manage Jenkins'` option in the left pane. Select the `'Manage Plugins'` option and choose the `'Available'` tab. Search for the `'Slack Notification'` plugin and install it.
 
-Go back to the Jenkins' dashboard and find the `'Manage Jenkins'` option in the left pane. After that, select the `'Manage Plugins'` option and choose the `'Available'` tab. Search for the `'Slack Notification'` plugin and install it.
+Hopefully you’ve already created your Slack account. If not, [click here](https://slack.com/) to get started. Once you have a Slack account, configure the Jenkins integration by using [Jenkins CI](https://my.slack.com/services/new/jenkins-ci). After configuration, click on `'Manage Jenkins'` again in the left navigation and go to `'Configure System'`. Find the `'Slack'` section and add the following values:
 
-After installing the plugin, instructions for Slack should be configured.
-
-* Get a Slack account: [Slack](https://slack.com/)
-* Configure the Jenkins integration by using Jenkins CI: [Jenkins CI](https://my.slack.com/services/new/jenkins-ci)
-
-After configuration, click on `'Manage Jenkins'` again in the left navigation, and then go to `'Configure System'`. Find the `'Slack'` section and add the following values:
 * **`Workspace`**: \<TEAM-SUBDOMAIN>
->**Note:** Create a secret text credential by clicking `'Add'` button.
 * **`Credential`**: \<INTEGRATION-TOKEN-CREDENTIAL-ID>
 * **`Default channel / member id`**: \<CHANNEL-NAME>
 
-Jenkins and Slack integration can be tested by clicking `'Test Connection'` button.
+If you’d like, you can create a secret text credential by clicking the `'Add'` button. You can also test the Jenkins and Slack integration by clicking the `'Test Connection'` button.
 
 ![jenkins-slack-integration](./gif/jenkins-slack-integration.gif "Jenkins Slack Integration")
 
 ### 7. Integrate Jenkins and GitHub
 
-Webhooks allow external services to be notified when certain events happen. When the specified events happen, GitHub will send a POST request to Jenkins. Learn more in GitHub's [Webhooks Guide](https://developer.github.com/webhooks/).
+To receive specified events to Jenkins from GitHub, you need to configure [Webhooks](https://developer.github.com/webhooks/). Webhooks allow external services to be notified when certain events happen. When the specified events happen, GitHub will send a POST request to Jenkins. 
 
-Go to your project repository on `GitHub`. Click on the `Settings` option in the right corner. Find the `Webhooks` option in the left pane. Click on `Add webhook` button. The payload URL is `http://<JENKINS-URL>:<JENKINS-PORT>/github-webhook/`
+To begin configuration, navigate to your project repository on GitHub. Click `Settings` in the right corner and find the Webhooks option in the left pane. Click the `Add webhook` button. The payload URL is `http://<JENKINS-URL>:<JENKINS-PORT>/github-webhook/`. An example URL looks like
+`http://169.47.252.31:30100/github-webhook/`. Make sure you save the webhook. 
 
->**Note:** Example payload URL is `http://169.47.252.31:30100/github-webhook/`
+Jenkins is now configured to accept events from GitHub and there’s only a few more steps to complete the Jenkins and GitHub integration.
 
-Save the webhook. 
-
-After GitHub webhook configuration, GitHub will send specified events to Jenkins. Now, Jenkins should be configured to accept those events.
-
-Go to the first pipeline's dashboard and click on `'Configure'` option in the left pane. Choose the `'GitHub hook trigger for GITScm polling'` option under the `'Build Triggers'` section and save the configuration.
+Head over to the first pipeline's dashboard and click the `'Configure'` option. Choose `'GitHub hook trigger for GITScm polling'` under the `'Build Triggers'` section and save the configuration. The pipeline should be triggered manually once to identify stages which are used in the Jenkinsfile. After that, the GitHub webhook can trigger the pipeline.
 
 >**Note:** <u>Pipeline should be triggered manually once</u> to be identified Jenkinsfile steps by Jenkins. After that, GitHub wekbooks can trigger the pipeline.
 
@@ -316,18 +328,20 @@ Go to the first pipeline's dashboard and click on `'Configure'` option in the le
 
 ### 8. Test the First Jenkins Pipeline 
 
-Jenkins is ready to test. Go to the first pipeline's dashboard and click on `'Build Now'` button. The steps that are defined in Jenkinsfile can be seen visually. After that, make a trivial change on `'index.js'` and push it to `GitHub`. You will see that pipeline is triggered by GitHub.
-
->**Note:** Jenkins deploys a sample NodeJS application to Kubernetes. Application can be seen via `http://<JENKINS-URL>:30300/getpodinfo`
+You’ve made it to the final step! Jenkins is finally ready to test. Go to the first pipeline's dashboard and click `'Build Now'`. The steps that are defined in Jenkinsfile are now available. Simply make a small change on the `'index.js'` and push it to `GitHub`. The pipeline is triggered by GitHub and Jenkins deploys a sample NodeJS application to Kubernetes. The application can be found at `http://<JENKINS-URL>:30300/getpodinfo`.
 
 ![test-the-first-pipeline](./gif/test-the-first-pipeline.gif "Test the First Pipeline")
 
-Run the following command to watch the changes in Kubernetes while building process is running.
+Lastly, run the following command to watch the changes in Kubernetes while the building process is running.
 
 ```
 kubectl get pods -w
 ```
 
->**Note:** In this video, replica size is increased from 1 to 10. To test it modify the `'deployment.yaml'`.
-
 ![change-the-replicas](./gif/change-the-replicas.gif "Change The Replicas")
+
+ >**Note:** In this demonstration, the replica size is increased from 1 to 10. To test it modify the `'deployment.yaml'`.
+
+ ### Summary
+
+ Congratulations! You’ve successfully set up a continuous integration environment using Jenkins, Slack, and GitHub. Integrating GitHub with Jenkins automates deployment, testing, and ensures your projects are always up to date. 
