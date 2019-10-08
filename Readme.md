@@ -70,7 +70,7 @@ Login to IBM Cloud and choose the `'Kubernetes'` option from the navigation menu
 
 >**Note:** This process will take approximately 40 minutes.
 
-![create-a-kubernetes-cluster-on-ibm-cloud](./gif/create-a-kubernetes-cluster.gif "Create a Kubernetes Cluster on IBM Cloud")
+![create-a-kubernetes-cluster-on-ibm-cloud](./gif/create-a-kubernetes-cluster-scaled.gif "Create a Kubernetes Cluster on IBM Cloud")
 
 ### 2. Build a Modified Jenkins Image
 
@@ -185,7 +185,7 @@ The deployment file is now ready to deploy modified Jenkins to Kubernetes.
 
 * Now, open the Kubernetes cluster dashboard which we created in step 1. Navigate to the `'Access'` tab and run the commands to gain access to the Kubernetes cluster via the terminal.
 
-![kubernetes-gain-access-via-terminal](./gif/kubernetes-gain-access-via-terminal.gif "Kubernetes Gain Access via Terminal")
+![kubernetes-gain-access-via-terminal](./gif/kubernetes-gain-access-via-terminal-scaled.gif "Kubernetes Gain Access via Terminal")
 
 * Make sure that the directory is `'modified-jenkins'` and run the following commands to deploy the modified Jenkins to Kubernetes:
 
@@ -218,7 +218,7 @@ $ export NODE_PORT=30100
 $ echo $EXTERNAL_IP:$NODE_PORT
 ```
 
-![get-external-ip-kubernetes-worker-node](./gif/get-external-ip-kubernetes-worker-node.gif "Get External IP of Kubernetes Worker Node")
+![get-external-ip-kubernetes-worker-node](./gif/get-external-ip-kubernetes-worker-node-scaled.gif "Get External IP of Kubernetes Worker Node")
 
 ### 4. Set up Jenkins Environment
 
@@ -235,7 +235,7 @@ Now select the `'Install suggested plugins'` option. Continue by selecting `'Con
 
 And just like that, Jenkins is ready to use.
 
-![jenkins-first-set-up](./gif/jenkins-first-set-up.gif "Jenkins First Set up")
+![jenkins-first-set-up](./gif/jenkins-first-set-up-scaled.gif "Jenkins First Set up")
 
 With Jenkins ready for use, the following credentials are needed for Jenkins to fulfill a duty conveniently and to run properly:
 
@@ -273,7 +273,7 @@ $ base64 <PEM-FILE>.pem
 
 Copy the result and open the `'<KUBE-CONFIG>.yml'` file with a code editor. Find `'certificate-authority: <PEM-FILE>.pem'` and change it to `'certificate-authority-data: <BASE64-RESULT>'`.
 
-![kube-config-editing](./gif/kube-config-editing.gif "Kubeconfig Editing")
+![kube-config-editing](./gif/kube-config-editing-scaled.gif "Kubeconfig Editing")
 
 After completing the steps above, the `'<KUBE-CONFIG>.yml'` now contains the `'<PEM-FILE>.pem'` file.
 
@@ -293,7 +293,7 @@ Choose `'GitHub project'` and type your project’s URL. Find the `'Pipeline'` s
 
 Now type in your repository URL and choose the `'Github'` credentials. (An example repository url is `'https://github.com/kemallaydin/jenkins-example.git'`)
 
-![jenkins-first-pipeline](./gif/jenkins-first-pipeline.gif "Jenkins First Pipeline")
+![jenkins-first-pipeline](./gif/jenkins-first-pipeline-scaled.gif "Jenkins First Pipeline")
 
 Great! You’re now ready for the next step.
 
@@ -309,7 +309,7 @@ Hopefully you’ve already created your Slack account. If not, [click here](http
 
 If you’d like, you can create a secret text credential by clicking the `'Add'` button. You can also test the Jenkins and Slack integration by clicking the `'Test Connection'` button.
 
-![jenkins-slack-integration](./gif/jenkins-slack-integration.gif "Jenkins Slack Integration")
+![jenkins-slack-integration](./gif/jenkins-slack-integration-scaled.gif "Jenkins Slack Integration")
 
 ### 7. Integrate Jenkins and GitHub
 
@@ -324,13 +324,13 @@ Head over to the first pipeline's dashboard and click the `'Configure'` option. 
 
 >**Note:** <u>Pipeline should be triggered manually once</u> to be identified Jenkinsfile steps by Jenkins. After that, GitHub wekbooks can trigger the pipeline.
 
-![jenkins-github-integration](./gif/jenkins-github-integration.gif "Jenkins GitHub Integration")
+![jenkins-github-integration](./gif/jenkins-github-integration-scaled.gif "Jenkins GitHub Integration")
 
 ### 8. Test the First Jenkins Pipeline 
 
 You’ve made it to the final step! Jenkins is finally ready to test. Go to the first pipeline's dashboard and click `'Build Now'`. The steps that are defined in Jenkinsfile are now available. Simply make a small change on the `'index.js'` and push it to `GitHub`. The pipeline is triggered by GitHub and Jenkins deploys a sample NodeJS application to Kubernetes. The application can be found at `http://<JENKINS-URL>:30300/getpodinfo`.
 
-![test-the-first-pipeline](./gif/test-the-first-pipeline.gif "Test the First Pipeline")
+![test-the-first-pipeline](./gif/test-the-first-pipeline-scaled.gif "Test the First Pipeline")
 
 Lastly, run the following command to watch the changes in Kubernetes while the building process is running.
 
@@ -338,7 +338,7 @@ Lastly, run the following command to watch the changes in Kubernetes while the b
 kubectl get pods -w
 ```
 
-![change-the-replicas](./gif/change-the-replicas.gif "Change The Replicas")
+![change-the-replicas](./gif/change-the-replicas-scaled.gif "Change The Replicas")
 
  >**Note:** In this demonstration, the replica size is increased from 1 to 10. To test it modify the `'deployment.yaml'`.
 
